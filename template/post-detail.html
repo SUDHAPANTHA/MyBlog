@@ -1,0 +1,17 @@
+{% extends "base.html" %} {% block content %}
+<div class="post-detail">
+  <h1>{{ post.title }}</h1>
+  <div class="meta">
+    <p>Published on: {{ post.published_at }}</p>
+    <p>By: {{ post.author.username }}</p>
+  </div>
+  {% if post.image %}
+  <img
+    src="{{ post.image.url }}"
+    alt="{{ post.title }}"
+    style="max-width: 100%; height: auto"
+  />
+  {% endif %}
+  <p>{{ post.content }}</p>
+</div>
+{% endblock %}
