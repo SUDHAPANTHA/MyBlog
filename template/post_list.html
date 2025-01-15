@@ -25,7 +25,11 @@
             class="btn btn-primary btn-sm me-3 px-4"
             >View</a
           >
-          <a href="{% url 'post-edit' post.pk %}" class="btn btn-warning btn-sm me-3 px-4">Edit</a>
+          <a
+            href="{% url 'post-edit' post.id %}"
+            class="btn btn-warning btn-sm me-3 px-4"
+            >Edit</a
+          >
           <form action="{% url 'post-delete' post.pk %}" method="post">
             {% csrf_token %}
             <button
