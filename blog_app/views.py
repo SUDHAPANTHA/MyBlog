@@ -1,6 +1,6 @@
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
-
+from django.contrib.auth.decorators import login_required
 from blog_app.models import Post
 
 # Create your views here.
@@ -22,3 +22,13 @@ def post_delete(request, pk):
     todo = Post.objects.get(id=pk)
     todo.delete()
     return HttpResponseRedirect("/")
+@login_required
+def draft_detail(request, pk):
+    post = Post.objects.get(id=pk, published_at__isnull=True)
+    return render(request, "draft_detail.html", {"post": post})
+@login_required
+def draft_list(request, pk):
+    post = Post.objects.filter(id=pk, published_at__isnull=True)
+    return render(request, "draft_list.html", {"post": post})
+
+
