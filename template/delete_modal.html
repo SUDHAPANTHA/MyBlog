@@ -28,7 +28,9 @@
         </button>
         <form action="{% url 'post-delete' post.pk %}" method="post">
           {% csrf_token %}
-          <button type="submit" class="btn btn-danger">Delete</button>
+          <button type="submit" class="btn btn-danger text-white">
+            Delete
+          </button>
         </form>
       </div>
     </div>
