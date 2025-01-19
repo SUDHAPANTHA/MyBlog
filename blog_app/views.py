@@ -14,7 +14,7 @@ def post_list(request):
 @login_required
 def post_detail(request, pk):   
     posts = Post.objects.get(pk=pk, published_at__isnull=False)
-    return render(request, "post_detail.html", {"posts": posts})
+    return render(request, "post-detail.html", {"posts": posts})
 
 @login_required
 def post_draft(request, pk):
