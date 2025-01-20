@@ -5,25 +5,16 @@ from django.utils import timezone
 
 from blog_app.forms import PostForm
 from blog_app.models import Post
-from django.views.generic import ListView
-from django.views.generic.detail import DetailView
-#class Based View
-class PostListView(ListView):
-    model = Post
-    template_name = "post_list.html"
-    context_object_name = "posts"
-    def get_queryset(self):
-        posts = Post.objects.filter(published_at__isnull=False).order_by("-id")
-        return posts
 
-class PostDetailView(DetailView):
-    model = Post
-    template_name = "post-detail.html"
-    context_object_name = "posts"
-    def get_queryset(self):
-        queryset = Post.objects.filter(pk=self.kwargs["pk"], published_at__isnull=False)
-        return queryset
+@login_required
+def post_list(request):
+    posts = Post.objects.filter(published_at__isnull=False).order_by("-published_at")
+    return render(request, "post_list.html", {"posts": posts})
 
+@login_required
+def post_detail(request, pk):   
+    posts = Post.objects.get(pk=pk, published_at__isnull=False)
+    return render(request, "post-detail.html", {"posts": posts})
 
 @login_required
 def post_draft(request, pk):
