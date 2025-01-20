@@ -40,10 +40,7 @@ class DraftDetailView(LoginRequiredMixin, DetailView):
         queryset = Post.objects.filter(pk=self.kwargs["pk"], published_at__isnull=True)
         return queryset
 
-@login_required
-def draft_detail(request, pk):
-    posts = Post.objects.get(pk=pk, published_at__isnull=True)
-    return render(request, "draft_detail.html", {"posts": posts})
+
 
 @login_required
 def post_create(request):
