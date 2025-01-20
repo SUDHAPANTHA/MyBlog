@@ -7,6 +7,7 @@ from blog_app.forms import PostForm
 from blog_app.models import Post
 from django.views.generic import ListView
 from django.views.generic.detail import DetailView
+from django.contrib.auth.mixins import LoginRequiredMixin
 #class Based View
 class PostListView(ListView):
     model = Post
@@ -24,11 +25,14 @@ class PostDetailView(DetailView):
         queryset = Post.objects.filter(pk=self.kwargs["pk"], published_at__isnull=False)
         return queryset
 
+class DraftListView(LoginRequiredMixin, ListView):
+    model = Post
+    template_name = "draft_list.html"
+    context_object_name = "posts"
+    def get_queryset(self):        
+        queryset = Post.objects.filter(published_at__isnull=True) 
+        return queryset  
 
-@login_required
-def post_draft(request, pk):
-    posts = Post.objects.get(pk=pk, published_at__isnull=True)
-    return render(request, "draft_list.html", {"posts": posts})
 
 @login_required
 def draft_detail(request, pk):
