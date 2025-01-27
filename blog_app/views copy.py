@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 
 from django.utils import timezone
+from django.views.generic import View
 
 from blog_app.forms import PostForm
 from blog_app.models import Post
@@ -25,6 +26,19 @@ def post_draft(request, pk):
 def draft_detail(request, pk):
     posts = Post.objects.get(pk=pk, published_at__isnull=True)
     return render(request, "draft_detail.html", {"posts": posts})
+class PostCreateView(View):
+    def get(self, request):
+        form = PostForm()
+        return render(request, "post_create.html", {"form": form})
+    def post(self, request): 
+        form = PostForm(request.POST, request.FILES)
+        if form.is_valid(): 
+            post = form.save(commit=False)
+            post.author = request.user
+            post.save()
+            return redirect("draft-detail", pk=post.pk)
+        else:
+            return render(request, "post_create.html", {"form": form})
 
 @login_required
 def post_create(request):
@@ -40,7 +54,7 @@ def post_create(request):
 
         if form.is_valid():
             post = form.save(commit=False)
-            post.author = request.user  # logged in user will be the author
+            post.author = request.user  
             post.save()
             return redirect("draft-detail", pk=post.pk)
         else:
@@ -69,11 +83,11 @@ def post_update(request, pk):
         {"form": form},
     )
 
-@login_required
-def post_delete(request, pk):
-    post = Post.objects.get(pk=pk)
-    post.delete()
-    return redirect("post-list")
+# @login_required
+# def post_delete(request, pk):
+#     post = Post.objects.get(pk=pk)
+#     post.delete()
+#     return redirect("post-list")
 
 @login_required
 def draft_publish(request, pk):

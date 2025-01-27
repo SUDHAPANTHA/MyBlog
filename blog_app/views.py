@@ -5,9 +5,9 @@ from django.utils import timezone
 
 from blog_app.forms import PostForm
 from blog_app.models import Post
-from django.views.generic import ListView
-from django.views.generic.detail import DetailView
+from django.views.generic import ListView, DetailView, CreateView, UpdateView, View
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.urls import reverse_lazy
 #class Based View
 class PostListView(ListView):
     model = Post
@@ -39,61 +39,35 @@ class DraftDetailView(LoginRequiredMixin, DetailView):
     def get_queryset(self):
         queryset = Post.objects.filter(pk=self.kwargs["pk"], published_at__isnull=True)
         return queryset
-
-
-
-@login_required
-def post_create(request):
-    if request.method == "GET":
-        form = PostForm()
-        return render(
-            request,
-            "post_create.html",
-            {"form": form},
-        )
-    else:
-        form = PostForm(request.POST, request.FILES)
-
-        if form.is_valid():
-            post = form.save(commit=False)
-            post.author = request.user  # logged in user will be the author
-            post.save()
-            return redirect("draft-detail", pk=post.pk)
+class PostCreateView(LoginRequiredMixin, CreateView):
+    model = Post
+    form_class = PostForm
+    template_name = "post_create.html"
+    success_url = reverse_lazy("draft-list") 
+    def form_valid(self, form):
+        form.instance.author = self.request.user  
+        return super().form_valid(form)
+   
+class PostUpdateView(LoginRequiredMixin, UpdateView):
+    model = Post
+    template_name = "post_create.html"
+    form_class = PostForm
+    def get_success_url(self):
+        post = self.get_object()
+        if post.published_at:
+            return reverse_lazy("post-detail", kwargs={"pk": post.pk})
         else:
-            return render(
-                request,
-                "post_create.html",
-                {"form": form},
-            )
+            return reverse_lazy("draft-detail", kwargs={"pk": post.pk})
+   
+class PostDeleteView(LoginRequiredMixin, View):
+    def get(self, request, pk):
+        post = Post.objects.get(pk=pk)
+        post.delete()
+        return redirect("post-list")
 
-@login_required
-def post_update(request, pk):
-    post = Post.objects.get(pk=pk)
-    form = PostForm(instance=post)
-    if request.method == "POST":
-        form = PostForm(request.POST,request.FILES, instance=post)
-        if form.is_valid():
-            post = form.save()
-            if post.published_at:
-                return redirect("post-detail", post.pk)
-            else:
-                return redirect("draft-detail", post.pk)
-
-    return render(
-        request,
-        "post_create.html",
-        {"form": form},
-    )
-
-@login_required
-def post_delete(request, pk):
-    post = Post.objects.get(pk=pk)
-    post.delete()
-    return redirect("post-list")
-
-@login_required
-def draft_publish(request, pk):
-    post = Post.objects.get(pk=pk, published_at__isnull=True)
-    post.published_at = timezone.now()
-    post.save()
-    return redirect("post-list")
+class PostPublishView(LoginRequiredMixin, View):
+    def get(self, request, pk):
+        post = Post.objects.get(pk=pk, published_at__isnull=True)
+        post.published_at = timezone.now()
+        post.save()
+        return redirect("post-list")
